@@ -1,40 +1,52 @@
 "use strict";
-const refs = {
-  days: document.querySelector('span[data-value="days"]'),
-  hours: document.querySelector('span[data-value="hours"]'),
-  mins: document.querySelector('span[data-value="mins"]'),
-  secs: document.querySelector('span[data-value="secs"]'),
-}
+class CountdownTimer {
+  constructor({ selector, date }) {
+    this.selector = document.querySelector(selector);
+    this.date = date;
+    this._timerID = null;
+    this.start();
+  }
+  setDate(deltaTime) {
+    if (deltaTime <= Date.now) {      
+      clearInterval(this._timerID);
 
-const timer = {
-  start(){
-      const deadline = new Date('Feb 22, 2021');
-    setInterval(() => {
-        const targetTime = new Date();
-        const deltaTime = deadline - targetTime;
+      
 
-        updateClockface(deltaTime);
-    }, 1000);
-    if (deltaTime <= 0){
-  clearInterval(timer)
-};
+      this.selector.innerHTML = `<div class="container p-3 badge badge-success" style="width: 300px; height=200px; font-size: 72px">FINISH</div>`;
+    } else {
+      let days = this.selector.querySelector('span[data-value="days"]');
+      let hours = this.selector.querySelector('span[data-value="hours"]');
+      let mins = this.selector.querySelector('span[data-value="mins"]');
+      let secs = this.selector.querySelector('span[data-value="secs"]');
+      days.textContent = Math.floor(deltaTime / (1000 * 60 * 60 * 24));
+      hours.textContent = pad(Math.floor(
+        (deltaTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      ));
+      mins.textContent = pad(Math.floor(
+        (deltaTime % (1000 * 60 * 60)) / (1000 * 60)
+      ));
+      secs.textContent = pad(Math.floor((deltaTime % (1000 * 60)) / 1000));
+    }
+    
+  }
+ 
+  makeInterval() {
+    if (this._timerID === null) {
+      this._timerID = setInterval(() => {
+        const delta = this.date - Date.now();
+        this.setDate(delta);
+      }, 1000);
+    }
+  }
+  start() {
+    this.makeInterval();
   }
 }
-timer.start();
 
-function updateClockface(time) {
-    const days = pad(Math.floor(time / (1000 * 60 * 60 * 24)));
-    const hours = pad(
-      Math.floor((time % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-    );
-    const mins = pad(Math.floor((time % (1000 * 60 * 60)) / (1000 * 60)));
-    const secs = pad(Math.floor((time % (1000 * 60)) / 1000));
-
-    refs.days.textContent = days;
-    refs.hours.textContent = hours;
-    refs.mins.textContent = mins;
-    refs.secs.textContent = secs;
-}
 function pad(value) {
-    return String(value).padStart(2, '0');
-  }
+  return String(value).padStart(2, '0');
+};
+const timer = new CountdownTimer({
+  selector: "#timer-1",
+  date: new Date("Feb 22, 2021"),
+});
